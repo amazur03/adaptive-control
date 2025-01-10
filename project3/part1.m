@@ -42,11 +42,14 @@ title('Odpowiedź skokowa układu');
 grid on;
 
 % ---------- Regulacja Proporcjonalna ----------
-y_z = 1;  % Wartość zadana
-kp = 1;  % Wzmocnienie regulatora proporcjonalnego
+% Wartość zadana
+y_z = 1;      % Wartość zadana wyjścia
+kp = 1;       % Wzmocnienie regulatora proporcjonalnego
 
-% Rozwiązywanie ODE z regulacją proporcjonalną
-odefun_regulator = @(t, x) Ac * x + Bc * (kp * (y_z - Cc * x));  % Równanie stanu z regulatorem
+% Równanie różniczkowe z regulatorem proporcjonalnym
+odefun_regulator = @(t, x) Ac * x + Bc * (kp * (y_z - Cc * x));
+
+% Rozwiązywanie równań różniczkowych
 [t, x2] = ode45(odefun_regulator, tspan, x0);
 
 % Obliczanie odpowiedzi wyjściowej (y = Cx)
@@ -60,10 +63,10 @@ ylabel('Odpowiedź układu regulowanego y(t)');
 title('Odpowiedź układu z regulatorem P');
 grid on;
 
-% ---------- Regulacja LQR z wartością zadaną ----------
+% ---------- Regulacja LQR ----------
 % Parametry regulacji
-Q = eye(2);  % Penalizacja stanów
-R = 0.1;     % Penalizacja sterowania
+Q = eye(2);   % Penalizacja stanów
+R = 0.1;      % Penalizacja sterowania
 
 % Obliczenie macierzy wzmocnienia LQR
 K = lqr(Ac, Bc, Q, R);
@@ -71,25 +74,17 @@ K = lqr(Ac, Bc, Q, R);
 % Wartość zadana wyjścia
 y_z = 1;
 
-% Obliczenie x_ref i u_ref
-x_ref = pinv(Cc) * y_z;  % Wartość odniesienia stanu
-u_ref = -pinv(Bc) * (Ac * x_ref);  % Wartość odniesienia sterowania
+% Obliczenie wartości odniesienia (x_ref i u_ref)
+x_ref = [0; -0.5];  % Wartość odniesienia stanu
+u_ref = -18;        % Wartość odniesienia sterowania
 
 % Równanie różniczkowe z regulacją LQR
 odefun_lqr = @(t, x) Ac * x + Bc * (u_ref - K * (x - x_ref));
 
-% Początkowe warunki
-x0 = [0; 0];  % Stan początkowy
-
-% Zakres czasu
-tspan = [0 10];
-
-% Rozwiązanie równań różniczkowych
+% Rozwiązywanie równań różniczkowych
 [t, x_lqr] = ode45(odefun_lqr, tspan, x0);
 
-
-
-% Obliczanie odpowiedzi wyjściowej
+% Obliczanie odpowiedzi wyjściowej (y = Cx)
 y_lqr = Cc * x_lqr';
 
 % Rysowanie wykresu odpowiedzi
